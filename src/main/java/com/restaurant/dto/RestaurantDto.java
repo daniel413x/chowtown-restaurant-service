@@ -48,4 +48,6 @@ public class RestaurantDto {
     private List<MenuItem> menuItems;
 
     private String imageUrl;
+
+    private Boolean isActivatedByUser;
 };

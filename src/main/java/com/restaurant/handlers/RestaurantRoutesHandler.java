@@ -67,6 +67,7 @@ public class RestaurantRoutesHandler {
                             newRestaurant.setCountry("United States");
                             newRestaurant.setDeliveryPrice(1000);
                             newRestaurant.setEstimatedDeliveryTime(30);
+                            newRestaurant.setIsActivatedByUser(false);
                             newRestaurant.setImageUrl("https://res.cloudinary.com/dbpwbih9m/image/upload/v1712544445/chowtown/restaurant-form-placeholder_ehhscf.png");
                             newRestaurant.setCuisines(Arrays.asList("Italian", "Mexican"));
                             newRestaurant.setMenuItems(Arrays.asList(
@@ -102,6 +103,7 @@ public class RestaurantRoutesHandler {
                                         restaurant.setMenuItems(restaurantPUTReq.getMenuItems().stream()
                                                 .map(menuItemReq -> new MenuItem(null, menuItemReq.getName(), menuItemReq.getPrice()))
                                                 .collect(Collectors.toList()));
+                                        restaurant.setIsActivatedByUser(restaurantPUTReq.getIsActivatedByUser());
                                         restaurant.setLastUpdated(LocalDateTime.now());
                                         return restaurantRepository.save(restaurant)
                                                 .flatMap(savedRestaurant -> ServerResponse.status(HttpStatus.OK).bodyValue(convertToDto(savedRestaurant)));

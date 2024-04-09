@@ -51,6 +51,9 @@ public class Restaurant {
     @Field("imageUrl")
     private String imageUrl;
 
+    @Field("isActivatedByUser")
+    private Boolean isActivatedByUser;
+
     @Field("lastUpdated")
     private LocalDateTime lastUpdated;
 }

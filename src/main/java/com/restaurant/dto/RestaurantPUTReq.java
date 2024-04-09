@@ -38,6 +38,9 @@ public class RestaurantPUTReq {
     @NotBlank(message = "String \"imageUrl\" must not be empty")
     private String imageUrl;
 
+    @NotNull(message = "Boolean \"isActivatedByUser\" must not be null")
+    private Boolean isActivatedByUser;
+
     @NotEmpty(message = "Menu items list \"menuItems\" cannot be empty")
     private List<MenuItemPUTReq> menuItems;
 };
