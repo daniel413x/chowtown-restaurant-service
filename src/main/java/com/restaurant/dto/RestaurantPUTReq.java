@@ -3,6 +3,7 @@ package com.restaurant.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,13 +17,13 @@ import java.util.List;
 @AllArgsConstructor
 public class RestaurantPUTReq {
 
-    @NotBlank(message = "Restaurant name must not be empty")
+    @NotBlank(message = "String \"restaurantName\" must not be empty")
     private String restaurantName;
 
-    @NotBlank(message = "City must not be empty")
+    @NotBlank(message = "String \"city\" must not be empty")
     private String city;
 
-    @NotBlank(message = "Country must not be empty")
+    @NotBlank(message = "String \"country\" must not be empty")
     private String country;
 
     @Min(value = 0)
@@ -31,12 +32,12 @@ public class RestaurantPUTReq {
     @Min(value = 0)
     private Integer estimatedDeliveryTime;
 
-    @NotEmpty(message = "Cuisines list cannot be empty")
+    @NotEmpty(message = "String list \"cuisines\" cannot be empty")
     private List<String> cuisines;
 
-    @NotBlank(message = "Image URL must not be empty")
+    @NotBlank(message = "String \"imageUrl\" must not be empty")
     private String imageUrl;
 
-    @NotEmpty(message = "Menu items cannot be empty")
+    @NotEmpty(message = "Menu items list \"menuItems\" cannot be empty")
     private List<MenuItemPUTReq> menuItems;
 };
