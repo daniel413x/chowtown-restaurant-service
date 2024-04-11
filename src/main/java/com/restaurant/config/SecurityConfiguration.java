@@ -28,7 +28,9 @@ public class SecurityConfiguration {
 	public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
 		return http.authorizeExchange(exchanges -> exchanges
 						.pathMatchers(HttpMethod.OPTIONS).permitAll()
-						.anyExchange().authenticated())
+						.pathMatchers("/api/customer/search/**").permitAll()
+						.anyExchange().authenticated()
+				)
 				.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
 				.build();
 	}
@@ -42,7 +44,7 @@ public class SecurityConfiguration {
 	CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowCredentials(true);
-		configuration.setAllowedOrigins(List.of(System.getenv("CMS_API_SVC_ADDRESS")));
+		configuration.setAllowedOrigins(List.of(System.getenv("CMS_API_SVC_ADDRESS"), System.getenv("CUSTOMER_API_SVC_ADDRESS")));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("*"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

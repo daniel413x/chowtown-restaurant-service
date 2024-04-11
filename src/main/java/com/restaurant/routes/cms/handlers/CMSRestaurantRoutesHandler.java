@@ -1,14 +1,12 @@
-package com.restaurant.handlers;
+package com.restaurant.routes.cms.handlers;
 
-import com.restaurant.dto.RestaurantDto;
-import com.restaurant.dto.RestaurantPUTReq;
+import com.restaurant.routes.cms.dto.CMSRestaurantDto;
+import com.restaurant.routes.cms.dto.CMSRestaurantPUTReq;
 import com.restaurant.model.MenuItem;
 import com.restaurant.model.Restaurant;
-import com.restaurant.repository.RestaurantRepository;
+import com.restaurant.routes.cms.repository.CMSRestaurantRepository;
 import com.restaurant.utils.ValidationHandler;
-import org.bson.codecs.jsr310.LocalDateTimeCodec;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
@@ -24,25 +22,25 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-public class RestaurantRoutesHandler {
+public class CMSRestaurantRoutesHandler {
 
-    private RestaurantRepository restaurantRepository;
+    private CMSRestaurantRepository CMSRestaurantRepository;
     private ReactiveJwtDecoder jwtDecoder;
     private ValidationHandler validationHandler;
 
     @Autowired
-    public RestaurantRoutesHandler(RestaurantRepository restaurantRepository, ReactiveJwtDecoder jwtDecoder, ValidationHandler validationHandler) {
-        this.restaurantRepository = restaurantRepository;
+    public CMSRestaurantRoutesHandler(CMSRestaurantRepository CMSRestaurantRepository, ReactiveJwtDecoder jwtDecoder, ValidationHandler validationHandler) {
+        this.CMSRestaurantRepository = CMSRestaurantRepository;
         this.jwtDecoder = jwtDecoder;
         this.validationHandler = validationHandler;
     }
 
-    public RestaurantRoutesHandler() {}
+    public CMSRestaurantRoutesHandler() {}
 
     public Mono<ServerResponse> getByAuth0Id(ServerRequest req) {
         String auth0Id = req.pathVariable("auth0id");
         String authorizationHeader = req.headers().firstHeader("Authorization");
-        return restaurantRepository.findByUserId(auth0Id)
+        return CMSRestaurantRepository.findByUserId(auth0Id)
                 .flatMap(restaurant -> this.getAuth0IdFromToken(authorizationHeader)
                             .flatMap(decodedAuth0Id -> {
                                 if (!decodedAuth0Id.equals(restaurant.getUserId())) {
@@ -56,7 +54,7 @@ public class RestaurantRoutesHandler {
     public Mono<ServerResponse> create(ServerRequest req) {
         String authorizationHeader = req.headers().firstHeader("Authorization");
         return this.getAuth0IdFromToken(authorizationHeader)
-                .flatMap(decodedAuth0Id -> restaurantRepository.findByUserId(decodedAuth0Id)
+                .flatMap(decodedAuth0Id -> CMSRestaurantRepository.findByUserId(decodedAuth0Id)
                         .flatMap(existingRestaurant -> ServerResponse.ok().bodyValue(convertToDto(existingRestaurant)))
                         .switchIfEmpty(Mono.defer(() -> {
                             // create new restaurant with initial placeholder properties
@@ -75,7 +73,7 @@ public class RestaurantRoutesHandler {
                                     new MenuItem(null, "Tacos", 500)
                             ));
                             newRestaurant.setLastUpdated(LocalDateTime.now());
-                            return restaurantRepository.save(newRestaurant)
+                            return CMSRestaurantRepository.save(newRestaurant)
                                     .flatMap(savedRestaurant -> ServerResponse.status(HttpStatus.CREATED).bodyValue(convertToDto(savedRestaurant)));
                         }))
                 );
@@ -84,13 +82,13 @@ public class RestaurantRoutesHandler {
     public Mono<ServerResponse> update(ServerRequest req) {
         String auth0Id = req.pathVariable("auth0id");
         String authorizationHeader = req.headers().firstHeader("Authorization");
-        return restaurantRepository.findByUserId(auth0Id)
+        return CMSRestaurantRepository.findByUserId(auth0Id)
                 .flatMap(restaurant -> this.getAuth0IdFromToken(authorizationHeader)
                         .flatMap(decodedAuth0Id -> {
                             if (!decodedAuth0Id.equals(restaurant.getUserId())) {
                                 return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Credentials mismatch"));
                             }
-                            return req.bodyToMono(RestaurantPUTReq.class)
+                            return req.bodyToMono(CMSRestaurantPUTReq.class)
                                     .flatMap(restaurantPUTReq -> {
                                         this.validationHandler.validate(restaurantPUTReq, "userPutReq");
                                         restaurant.setCuisines(restaurantPUTReq.getCuisines());
@@ -105,7 +103,7 @@ public class RestaurantRoutesHandler {
                                                 .collect(Collectors.toList()));
                                         restaurant.setIsActivatedByUser(restaurantPUTReq.getIsActivatedByUser());
                                         restaurant.setLastUpdated(LocalDateTime.now());
-                                        return restaurantRepository.save(restaurant)
+                                        return CMSRestaurantRepository.save(restaurant)
                                                 .flatMap(savedRestaurant -> ServerResponse.status(HttpStatus.OK).bodyValue(convertToDto(savedRestaurant)));
                                     });
                         })
@@ -113,8 +111,8 @@ public class RestaurantRoutesHandler {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found")));
     }
 
-    private RestaurantDto convertToDto(Restaurant restaurant) {
-        return new RestaurantDto(restaurant);
+    private CMSRestaurantDto convertToDto(Restaurant restaurant) {
+        return new CMSRestaurantDto(restaurant);
     }
 
     private Mono<String> getAuth0IdFromToken(String authorizationHeader) {

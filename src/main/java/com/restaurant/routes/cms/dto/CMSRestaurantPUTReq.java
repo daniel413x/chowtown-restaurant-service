@@ -1,4 +1,4 @@
-package com.restaurant.dto;
+package com.restaurant.routes.cms.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RestaurantPUTReq {
+public class CMSRestaurantPUTReq {
 
     @NotBlank(message = "String \"restaurantName\" must not be empty")
     private String restaurantName;
@@ -42,5 +42,5 @@ public class RestaurantPUTReq {
     private Boolean isActivatedByUser;
 
     @NotEmpty(message = "Menu items list \"menuItems\" cannot be empty")
-    private List<MenuItemPUTReq> menuItems;
+    private List<CMSMenuItemPUTReq> menuItems;
 };

@@ -1,4 +1,4 @@
-package com.restaurant.dto;
+package com.restaurant.routes.cms.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MenuItemPUTReq {
+public class CMSMenuItemPUTReq {
 
     private String name;
 

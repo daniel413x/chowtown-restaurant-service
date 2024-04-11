@@ -1,6 +1,6 @@
-package com.restaurant.router;
+package com.restaurant.routes.customer.router;
 
-import com.restaurant.handlers.RestaurantRoutesHandler;
+import com.restaurant.routes.customer.handlers.CustomerRestaurantRoutesHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RequestPredicates;
@@ -9,16 +9,14 @@ import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration(proxyBeanMethods = false)
-public class RestaurantRouter {
+public class CustomerRestaurantRouter {
 
     @Bean
-    public RouterFunction<ServerResponse> restaurantRouterRoutes(RestaurantRoutesHandler restaurantRoutesHandler) {
+    public RouterFunction<ServerResponse> customerRestaurantRouterRoutes(CustomerRestaurantRoutesHandler customerRestaurantRoutesHandler) {
         return RouterFunctions
                 .route()
-                .nest(RequestPredicates.path("/api"), builder -> {
-                    builder.GET("/{auth0id}", restaurantRoutesHandler::getByAuth0Id);
-                    builder.POST("", restaurantRoutesHandler::create);
-                    builder.PUT("/{auth0id}", restaurantRoutesHandler::update);
+                .nest(RequestPredicates.path("/api/customer"), builder -> {
+                    builder.GET("/search/{city}", customerRestaurantRoutesHandler::get);
                 })
                 .build();
     }

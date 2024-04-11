@@ -1,4 +1,4 @@
-package com.restaurant.dto;
+package com.restaurant.routes.cms.dto;
 
 import com.restaurant.model.MenuItem;
 import com.restaurant.model.Restaurant;
@@ -13,9 +13,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RestaurantDto {
+public class CMSRestaurantDto {
 
-    public RestaurantDto(Restaurant restaurant) {
+    public CMSRestaurantDto(Restaurant restaurant) {
         this.setId(restaurant.getId());
         this.setUserId(restaurant.getUserId());
         this.setCountry(restaurant.getCountry());
@@ -27,6 +27,7 @@ public class RestaurantDto {
         this.setEstimatedDeliveryTime(restaurant.getEstimatedDeliveryTime());
         this.setImageUrl(restaurant.getImageUrl());
         this.setMenuItems(restaurant.getMenuItems());
+        this.setIsActivatedByUser(restaurant.getIsActivatedByUser());
     }
 
     private String id;
