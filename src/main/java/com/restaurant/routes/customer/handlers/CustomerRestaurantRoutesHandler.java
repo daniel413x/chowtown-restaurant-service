@@ -42,14 +42,16 @@ public class CustomerRestaurantRoutesHandler {
         return Mono.zip(restaurants.collectList(), count)
                 .flatMap(result -> {
                     List<CustomerRestaurantDto> dtos = result.getT1().stream().map(CustomerRestaurantDto::new).collect(Collectors.toList());
-                    CustomerRestaurantGETReq response = new CustomerRestaurantGETReq(dtos, result.getT2());
+                    CustomerRestaurantGETReq response = new CustomerRestaurantGETReq(dtos, pageRequest, result.getT2());
                     return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(response);
                 });
     }
 
     private PageRequest getPageRequest(ServerRequest req) {
         Map<String, String> queryParams = req.queryParams().toSingleValueMap();
-        int page = Integer.parseInt(queryParams.getOrDefault("page", "0"));
+        int page = Integer.parseInt(queryParams.getOrDefault("page", "1"));
+        // client app will submit page fields without mongo's zero-based pagination; ensure the repository works with a zero-based var in the next line
+        page = page - 1;
         int size = Integer.parseInt(queryParams.getOrDefault("size", "10"));
         return PageRequest.of(page, size);
     }

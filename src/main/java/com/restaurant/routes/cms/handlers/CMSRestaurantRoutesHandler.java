@@ -66,7 +66,7 @@ public class CMSRestaurantRoutesHandler {
                             newRestaurant.setDeliveryPrice(1000);
                             newRestaurant.setEstimatedDeliveryTime(30);
                             newRestaurant.setIsActivatedByUser(false);
-                            newRestaurant.setImageUrl("https://res.cloudinary.com/dbpwbih9m/image/upload/v1712544445/chowtown/restaurant-form-placeholder_ehhscf.png");
+                            newRestaurant.setImageUrl("https://res.cloudinary.com/dbpwbih9m/image/upload/v1712971993/restaurant-form-placeholder_ybgxoi.png");
                             newRestaurant.setCuisines(Arrays.asList("Italian", "Mexican"));
                             newRestaurant.setMenuItems(Arrays.asList(
                                     new MenuItem(null, "Pizza", 1000),
