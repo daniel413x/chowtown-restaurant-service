@@ -13,7 +13,6 @@ import java.util.List;
 
 @Repository
 public interface CustomerRestaurantRepository extends ReactiveMongoRepository<Restaurant, String> {
-    Mono<Restaurant> findByUserId(String userId);
     Flux<Restaurant> findByCity(String city, Pageable pageable);
 
     @Query(value = "{ 'city': { $regex: ?0, $options: 'i' }, 'restaurantName': { $regex: ?1, $options: 'i' }, $or : [ { $expr: { $eq: ['?2', '[]'] } } , { cuisines : { $all: ?2 } } ] }")

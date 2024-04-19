@@ -54,7 +54,8 @@ public class CustomerRestaurantRoutesHandler {
         Sort.Direction direction = "desc".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Map<String, String> queryParams = req.queryParams().toSingleValueMap();
         int page = Integer.parseInt(queryParams.getOrDefault("page", "1"));
-        // client app will submit page fields without mongo's zero-based pagination; ensure the repository works with a zero-based var in the next line
+        // client app will submit page fields without mongo's zero-based
+        // pagination; ensure the repository works with a zero-based param in the next line
         page = page - 1;
         int size = Integer.parseInt(queryParams.getOrDefault("size", "10"));
         return PageRequest.of(page, size, Sort.by(direction, sortBy));
