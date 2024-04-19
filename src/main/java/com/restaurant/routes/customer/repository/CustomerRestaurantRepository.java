@@ -16,6 +16,6 @@ public interface CustomerRestaurantRepository extends ReactiveMongoRepository<Re
     Mono<Restaurant> findByUserId(String userId);
     Flux<Restaurant> findByCity(String city, Pageable pageable);
 
-    @Query(value = "{ 'city': { $regex: ?0, $options: 'i' }, 'restaurantName': { $regex: ?1, $options: 'i' }, $or : [ { $expr: { $eq: ['?2', '[]'] } } , { cuisines : { $all: ?2 } } ] }", sort = "{ lastUpdated: 1 }")
-    Flux<Restaurant> findByQuery(String city, String restaurantName, List<String> cuisines, String sortOption, Pageable pageable);
+    @Query(value = "{ 'city': { $regex: ?0, $options: 'i' }, 'restaurantName': { $regex: ?1, $options: 'i' }, $or : [ { $expr: { $eq: ['?2', '[]'] } } , { cuisines : { $all: ?2 } } ] }")
+    Flux<Restaurant> findByQuery(String city, String restaurantName, List<String> cuisines, Pageable pageable);
 }

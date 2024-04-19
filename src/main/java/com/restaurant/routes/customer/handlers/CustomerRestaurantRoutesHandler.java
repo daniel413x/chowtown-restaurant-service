@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.data.domain.Sort;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,8 +38,8 @@ public class CustomerRestaurantRoutesHandler {
         String sortBy = req.queryParam("sortBy").orElse("lastUpdated");
         String city = req.pathVariable("city").strip();
         PageRequest pageRequest = this.getPageRequest(req);
-        Mono<Long> count = customerRestaurantRepository.findByQuery(city, searchTerm, selectedCuisines, sortBy, Pageable.unpaged()).count();
-        Flux<Restaurant> restaurants = customerRestaurantRepository.findByQuery(city, searchTerm, selectedCuisines, sortBy, pageRequest);
+        Mono<Long> count = customerRestaurantRepository.findByQuery(city, searchTerm, selectedCuisines, Pageable.unpaged()).count();
+        Flux<Restaurant> restaurants = customerRestaurantRepository.findByQuery(city, searchTerm, selectedCuisines, pageRequest);
         return Mono.zip(restaurants.collectList(), count)
                 .flatMap(result -> {
                     List<CustomerRestaurantDto> dtos = result.getT1().stream().map(CustomerRestaurantDto::new).collect(Collectors.toList());
@@ -48,12 +49,15 @@ public class CustomerRestaurantRoutesHandler {
     }
 
     private PageRequest getPageRequest(ServerRequest req) {
+        String sortBy = req.queryParam("sortBy").orElse("lastUpdated");
+        String sortDirection = req.queryParam("sortDir").orElse("desc");
+        Sort.Direction direction = "desc".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Map<String, String> queryParams = req.queryParams().toSingleValueMap();
         int page = Integer.parseInt(queryParams.getOrDefault("page", "1"));
         // client app will submit page fields without mongo's zero-based pagination; ensure the repository works with a zero-based var in the next line
         page = page - 1;
         int size = Integer.parseInt(queryParams.getOrDefault("size", "10"));
-        return PageRequest.of(page, size);
+        return PageRequest.of(page, size, Sort.by(direction, sortBy));
     }
 
     private Mono<ServerResponse> createErrorResponse(Integer code, String message)  {
