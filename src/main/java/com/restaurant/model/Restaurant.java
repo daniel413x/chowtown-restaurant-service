@@ -26,6 +26,10 @@ public class Restaurant {
     @Field("userId")
     private String userId;
 
+    @Indexed(unique = true)
+    @Field("slug")
+    private String slug;
+
     @Field("menuItems")
     private List<MenuItem> menuItems;
 

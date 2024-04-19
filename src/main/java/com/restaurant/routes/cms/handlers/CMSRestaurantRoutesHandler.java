@@ -16,9 +16,11 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -51,16 +53,19 @@ public class CMSRestaurantRoutesHandler {
                 );
     }
 
+    // create new restaurant with initial placeholder properties
+    // this is called in tandem with the user creation endpoint
     public Mono<ServerResponse> create(ServerRequest req) {
         String authorizationHeader = req.headers().firstHeader("Authorization");
         return this.getAuth0IdFromToken(authorizationHeader)
                 .flatMap(decodedAuth0Id -> CMSRestaurantRepository.findByUserId(decodedAuth0Id)
                         .flatMap(existingRestaurant -> ServerResponse.ok().bodyValue(convertToDto(existingRestaurant)))
                         .switchIfEmpty(Mono.defer(() -> {
-                            // create new restaurant with initial placeholder properties
+                            UUID uuid = UUID.randomUUID();
+                            String restaurantName = "My Restaurant" + "-" + uuid;
                             Restaurant newRestaurant = new Restaurant();
                             newRestaurant.setUserId(decodedAuth0Id);
-                            newRestaurant.setRestaurantName("My Restaurant");
+                            newRestaurant.setRestaurantName(restaurantName);
                             newRestaurant.setCity("Dallas");
                             newRestaurant.setCountry("United States");
                             newRestaurant.setDeliveryPrice(1000);
@@ -73,6 +78,8 @@ public class CMSRestaurantRoutesHandler {
                                     new MenuItem(null, "Tacos", 500)
                             ));
                             newRestaurant.setLastUpdated(LocalDateTime.now());
+                            String slug = this.createSlug(restaurantName);
+                            newRestaurant.setSlug(slug);
                             return CMSRestaurantRepository.save(newRestaurant)
                                     .flatMap(savedRestaurant -> ServerResponse.status(HttpStatus.CREATED).bodyValue(convertToDto(savedRestaurant)));
                         }))
@@ -103,6 +110,8 @@ public class CMSRestaurantRoutesHandler {
                                                 .collect(Collectors.toList()));
                                         restaurant.setIsActivatedByUser(restaurantPUTReq.getIsActivatedByUser());
                                         restaurant.setLastUpdated(LocalDateTime.now());
+                                        String slug = this.createSlug(restaurantPUTReq.getRestaurantName());
+                                        restaurant.setSlug(slug);
                                         return CMSRestaurantRepository.save(restaurant)
                                                 .flatMap(savedRestaurant -> ServerResponse.status(HttpStatus.OK).bodyValue(convertToDto(savedRestaurant)));
                                     });
@@ -119,6 +128,17 @@ public class CMSRestaurantRoutesHandler {
         String tokenValue = authorizationHeader.replace("Bearer ", "");
         return jwtDecoder.decode(tokenValue)
                 .map(j -> j.getClaimAsString("sub"));
+    }
+
+    private String createSlug(String restaurantName) {
+        if (restaurantName == null) {
+            return "";
+        }
+        String normalized = Normalizer.normalize(restaurantName, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        String slug = normalized.replaceAll("[^\\p{Alnum}]+", "-").toLowerCase();
+        slug = slug.replaceAll("^-+|-+$", "");
+        return slug;
     }
 
     private Mono<ServerResponse> createErrorResponse(Integer code, String message)  {

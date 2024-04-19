@@ -28,6 +28,7 @@ public class CMSRestaurantDto {
         this.setImageUrl(restaurant.getImageUrl());
         this.setMenuItems(restaurant.getMenuItems());
         this.setIsActivatedByUser(restaurant.getIsActivatedByUser());
+        this.setSlug(restaurant.getSlug());
     }
 
     private String id;
@@ -49,6 +50,8 @@ public class CMSRestaurantDto {
     private List<MenuItem> menuItems;
 
     private String imageUrl;
+
+    private String slug;
 
     private Boolean isActivatedByUser;
 };

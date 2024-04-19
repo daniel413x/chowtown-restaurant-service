@@ -27,6 +27,7 @@ public class CustomerRestaurantDto {
         this.setEstimatedDeliveryTime(restaurant.getEstimatedDeliveryTime());
         this.setImageUrl(restaurant.getImageUrl());
         this.setMenuItems(restaurant.getMenuItems());
+        this.setSlug(restaurant.getSlug());
     }
 
     private String id;
@@ -48,6 +49,8 @@ public class CustomerRestaurantDto {
     private List<MenuItem> menuItems;
 
     private String imageUrl;
+
+    private String slug;
 
     private Boolean isActivatedByUser;
 };
