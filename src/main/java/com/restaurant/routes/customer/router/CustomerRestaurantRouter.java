@@ -17,6 +17,7 @@ public class CustomerRestaurantRouter {
                 .route()
                 .nest(RequestPredicates.path("/api/customer"), builder -> {
                     builder.GET("/search/{city}", customerRestaurantRoutesHandler::get);
+                    builder.GET("/{restaurantSlug}", customerRestaurantRoutesHandler::getBySlug);
                 })
                 .build();
     }

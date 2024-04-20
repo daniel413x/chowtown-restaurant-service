@@ -17,7 +17,6 @@ public class CustomerRestaurantDto {
 
     public CustomerRestaurantDto(Restaurant restaurant) {
         this.setId(restaurant.getId());
-        this.setUserId(restaurant.getUserId());
         this.setCountry(restaurant.getCountry());
         this.setRestaurantName(restaurant.getRestaurantName());
         this.setCity(restaurant.getCity());
@@ -31,8 +30,6 @@ public class CustomerRestaurantDto {
     }
 
     private String id;
-
-    private String userId;
 
     private String restaurantName;
 

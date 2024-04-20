@@ -29,6 +29,7 @@ public class SecurityConfiguration {
 		return http.authorizeExchange(exchanges -> exchanges
 						.pathMatchers(HttpMethod.OPTIONS).permitAll()
 						.pathMatchers("/api/customer/search/**").permitAll()
+						.pathMatchers("/api/customer/{restaurantSlug}").permitAll()
 						.anyExchange().authenticated()
 				)
 				.oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))

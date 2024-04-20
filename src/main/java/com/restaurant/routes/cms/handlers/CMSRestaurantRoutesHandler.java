@@ -106,7 +106,10 @@ public class CMSRestaurantRoutesHandler {
                                         restaurant.setCity(restaurantPUTReq.getCity());
                                         restaurant.setCountry(restaurantPUTReq.getCountry());
                                         restaurant.setMenuItems(restaurantPUTReq.getMenuItems().stream()
-                                                .map(menuItemReq -> new MenuItem(null, menuItemReq.getName(), menuItemReq.getPrice()))
+                                                .map(menuItemReq -> {
+                                                    UUID id = UUID.randomUUID();
+                                                    return new MenuItem(null, menuItemReq.getName(), menuItemReq.getPrice());
+                                                })
                                                 .collect(Collectors.toList()));
                                         restaurant.setIsActivatedByUser(restaurantPUTReq.getIsActivatedByUser());
                                         restaurant.setLastUpdated(LocalDateTime.now());

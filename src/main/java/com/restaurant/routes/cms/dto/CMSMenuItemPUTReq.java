@@ -14,4 +14,6 @@ public class CMSMenuItemPUTReq {
     private String name;
 
     private Integer price;
+
+
 };

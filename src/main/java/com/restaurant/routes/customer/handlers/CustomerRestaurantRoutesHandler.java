@@ -8,11 +8,13 @@ import com.restaurant.utils.ValidationHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.data.domain.Sort;
@@ -32,10 +34,22 @@ public class CustomerRestaurantRoutesHandler {
 
     public CustomerRestaurantRoutesHandler() {}
 
+    public Mono<ServerResponse> getBySlug(ServerRequest req) {
+        String slug = req.pathVariable("restaurantSlug").strip();
+        System.out.println(slug);
+        return customerRestaurantRepository.findBySlug(slug)
+                .flatMap(restaurant -> {
+                    CustomerRestaurantDto response = new CustomerRestaurantDto(restaurant);
+                    return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(response);
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));
+        }));
+    }
+
     public Mono<ServerResponse> get(ServerRequest req) {
         String searchTerm = req.queryParam("searchTerm").orElse("");
         List<String> selectedCuisines = Arrays.asList(req.queryParam("cuisines").orElse("").split(","));
-        String sortBy = req.queryParam("sortBy").orElse("lastUpdated");
         String city = req.pathVariable("city").strip();
         PageRequest pageRequest = this.getPageRequest(req);
         Mono<Long> count = customerRestaurantRepository.findByQuery(city, searchTerm, selectedCuisines, Pageable.unpaged()).count();
