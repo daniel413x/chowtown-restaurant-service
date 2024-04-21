@@ -6,8 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -26,9 +28,16 @@ public class CMSRestaurantDto {
         this.setCuisines(restaurant.getCuisines());
         this.setEstimatedDeliveryTime(restaurant.getEstimatedDeliveryTime());
         this.setImageUrl(restaurant.getImageUrl());
-        this.setMenuItems(restaurant.getMenuItems());
         this.setIsActivatedByUser(restaurant.getIsActivatedByUser());
         this.setSlug(restaurant.getSlug());
+        Flux.fromIterable(restaurant.getMenuItems())
+                .map(menuItemReq -> new CMSMenuItemDto(
+                        "menuItemReq.getId().toString()",
+                        menuItemReq.getName(),
+                        menuItemReq.getPrice()
+                ))
+                .collectList()
+                .doOnNext(this::setMenuItems);
     }
 
     private String id;
@@ -47,7 +56,7 @@ public class CMSRestaurantDto {
 
     private List<String> cuisines;
 
-    private List<MenuItem> menuItems;
+    private List<CMSMenuItemDto> menuItems;
 
     private String imageUrl;
 

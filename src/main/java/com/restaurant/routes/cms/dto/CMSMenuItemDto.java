@@ -1,27 +1,26 @@
-package com.restaurant.model;
+package com.restaurant.routes.cms.dto;
 
+import com.restaurant.model.MenuItem;
+import com.restaurant.model.Restaurant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "menuItems")
-public class MenuItem {
+public class CMSMenuItemDto {
 
-    @Id
-    private ObjectId id;
+    private String id;
 
-    @Field("name")
     private String name;
 
-    @Field("price")
     private Integer price;
-}
+};

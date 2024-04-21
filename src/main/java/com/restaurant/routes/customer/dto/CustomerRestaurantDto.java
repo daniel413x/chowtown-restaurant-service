@@ -2,6 +2,7 @@ package com.restaurant.routes.customer.dto;
 
 import com.restaurant.model.MenuItem;
 import com.restaurant.model.Restaurant;
+import com.restaurant.routes.cms.dto.CMSMenuItemDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,8 +26,14 @@ public class CustomerRestaurantDto {
         this.setCuisines(restaurant.getCuisines());
         this.setEstimatedDeliveryTime(restaurant.getEstimatedDeliveryTime());
         this.setImageUrl(restaurant.getImageUrl());
-        this.setMenuItems(restaurant.getMenuItems());
         this.setSlug(restaurant.getSlug());
+        List<CustomerMenuItemDto> menuItems = restaurant.getMenuItems().stream().map(menuItem -> {
+            String id = menuItem.getId().toString();
+            String name = menuItem.getName();
+            Integer price = menuItem.getPrice();
+            return new CustomerMenuItemDto(id, name, price);
+        }).toList();
+        this.setMenuItems(menuItems);
     }
 
     private String id;
@@ -43,7 +50,7 @@ public class CustomerRestaurantDto {
 
     private List<String> cuisines;
 
-    private List<MenuItem> menuItems;
+    private List<CustomerMenuItemDto> menuItems;
 
     private String imageUrl;
 

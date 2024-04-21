@@ -6,6 +6,7 @@ import com.restaurant.model.MenuItem;
 import com.restaurant.model.Restaurant;
 import com.restaurant.routes.cms.repository.CMSRestaurantRepository;
 import com.restaurant.utils.ValidationHandler;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -74,8 +75,8 @@ public class CMSRestaurantRoutesHandler {
                             newRestaurant.setImageUrl("https://res.cloudinary.com/dbpwbih9m/image/upload/v1712971993/restaurant-form-placeholder_ybgxoi.png");
                             newRestaurant.setCuisines(Arrays.asList("Italian", "Mexican"));
                             newRestaurant.setMenuItems(Arrays.asList(
-                                    new MenuItem(null, "Pizza", 1000),
-                                    new MenuItem(null, "Tacos", 500)
+                                    new MenuItem(new ObjectId(), "Pizza", 1000),
+                                    new MenuItem(new ObjectId(), "Tacos", 500)
                             ));
                             newRestaurant.setLastUpdated(LocalDateTime.now());
                             String slug = this.createSlug(restaurantName);
@@ -107,8 +108,10 @@ public class CMSRestaurantRoutesHandler {
                                         restaurant.setCountry(restaurantPUTReq.getCountry());
                                         restaurant.setMenuItems(restaurantPUTReq.getMenuItems().stream()
                                                 .map(menuItemReq -> {
-                                                    UUID id = UUID.randomUUID();
-                                                    return new MenuItem(null, menuItemReq.getName(), menuItemReq.getPrice());
+                                                    ObjectId id = menuItemReq.getId()
+                                                            .map(ObjectId::new)
+                                                            .orElseGet(ObjectId::new);
+                                                    return new MenuItem(id, menuItemReq.getName(), menuItemReq.getPrice());
                                                 })
                                                 .collect(Collectors.toList()));
                                         restaurant.setIsActivatedByUser(restaurantPUTReq.getIsActivatedByUser());
@@ -116,7 +119,7 @@ public class CMSRestaurantRoutesHandler {
                                         String slug = this.createSlug(restaurantPUTReq.getRestaurantName());
                                         restaurant.setSlug(slug);
                                         return CMSRestaurantRepository.save(restaurant)
-                                                .flatMap(savedRestaurant -> ServerResponse.status(HttpStatus.OK).bodyValue(convertToDto(savedRestaurant)));
+                                                .flatMap(savedRestaurant -> ServerResponse.noContent().build());
                                     });
                         })
                 )
