@@ -39,8 +39,8 @@ public class CustomerRestaurantRoutesHandler {
         System.out.println(slug);
         return customerRestaurantRepository.findBySlug(slug)
                 .flatMap(restaurant -> {
-                    CustomerRestaurantDto response = new CustomerRestaurantDto(restaurant);
-                    return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(response);
+                    return CustomerRestaurantDto.fromRestaurant(restaurant)
+                            .flatMap(res -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(res));
                 })
                 .switchIfEmpty(Mono.defer(() -> {
                     return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found"));
@@ -54,12 +54,10 @@ public class CustomerRestaurantRoutesHandler {
         PageRequest pageRequest = this.getPageRequest(req);
         Mono<Long> count = customerRestaurantRepository.findByQuery(city, searchTerm, selectedCuisines, Pageable.unpaged()).count();
         Flux<Restaurant> restaurants = customerRestaurantRepository.findByQuery(city, searchTerm, selectedCuisines, pageRequest);
-        return Mono.zip(restaurants.collectList(), count)
-                .flatMap(result -> {
-                    List<CustomerRestaurantDto> dtos = result.getT1().stream().map(CustomerRestaurantDto::new).collect(Collectors.toList());
-                    CustomerRestaurantGETReq response = new CustomerRestaurantGETReq(dtos, pageRequest, result.getT2());
-                    return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(response);
-                });
+        return restaurants.collectList()
+                .zipWith(count, (list, cnt) -> CustomerRestaurantGETReq.fromRestaurants(list, pageRequest, cnt))
+                .flatMap(dtoMono -> dtoMono)
+                .flatMap(dto -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(dto));
     }
 
     private PageRequest getPageRequest(ServerRequest req) {

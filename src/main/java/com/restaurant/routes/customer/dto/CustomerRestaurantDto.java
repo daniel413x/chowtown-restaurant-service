@@ -2,11 +2,12 @@ package com.restaurant.routes.customer.dto;
 
 import com.restaurant.model.MenuItem;
 import com.restaurant.model.Restaurant;
-import com.restaurant.routes.cms.dto.CMSMenuItemDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -16,24 +17,28 @@ import java.util.List;
 @AllArgsConstructor
 public class CustomerRestaurantDto {
 
-    public CustomerRestaurantDto(Restaurant restaurant) {
-        this.setId(restaurant.getId());
-        this.setCountry(restaurant.getCountry());
-        this.setRestaurantName(restaurant.getRestaurantName());
-        this.setCity(restaurant.getCity());
-        this.setCountry(restaurant.getCountry());
-        this.setDeliveryPrice(restaurant.getDeliveryPrice());
-        this.setCuisines(restaurant.getCuisines());
-        this.setEstimatedDeliveryTime(restaurant.getEstimatedDeliveryTime());
-        this.setImageUrl(restaurant.getImageUrl());
-        this.setSlug(restaurant.getSlug());
-        List<CustomerMenuItemDto> menuItems = restaurant.getMenuItems().stream().map(menuItem -> {
-            String id = menuItem.getId().toString();
-            String name = menuItem.getName();
-            Integer price = menuItem.getPrice();
-            return new CustomerMenuItemDto(id, name, price);
-        }).toList();
-        this.setMenuItems(menuItems);
+    public static Mono<CustomerRestaurantDto> fromRestaurant(Restaurant restaurant) {
+        CustomerRestaurantDto dto = new CustomerRestaurantDto();
+        dto.setId(restaurant.getId());
+        dto.setCountry(restaurant.getCountry());
+        dto.setRestaurantName(restaurant.getRestaurantName());
+        dto.setCity(restaurant.getCity());
+        dto.setDeliveryPrice(restaurant.getDeliveryPrice());
+        dto.setCuisines(restaurant.getCuisines());
+        dto.setEstimatedDeliveryTime(restaurant.getEstimatedDeliveryTime());
+        dto.setImageUrl(restaurant.getImageUrl());
+        dto.setSlug(restaurant.getSlug());
+        return Flux.fromIterable(restaurant.getMenuItems())
+                .map(menuItem -> new CustomerMenuItemDto(
+                        menuItem.getId().toString(),
+                        menuItem.getName(),
+                        menuItem.getPrice()
+                ))
+                .collectList()
+                .map(menuItems -> {
+                    dto.setMenuItems(menuItems);
+                    return dto;
+                });
     }
 
     private String id;
@@ -55,6 +60,4 @@ public class CustomerRestaurantDto {
     private String imageUrl;
 
     private String slug;
-
-    private Boolean isActivatedByUser;
 };

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.text.Normalizer;
@@ -49,7 +50,8 @@ public class CMSRestaurantRoutesHandler {
                                 if (!decodedAuth0Id.equals(restaurant.getUserId())) {
                                     return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Credentials mismatch"));
                                 }
-                                return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(convertToDto(restaurant));
+                                return convertToDto(restaurant)
+                                        .flatMap(dto -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(dto));
                             })
                 );
     }
@@ -60,7 +62,8 @@ public class CMSRestaurantRoutesHandler {
         String authorizationHeader = req.headers().firstHeader("Authorization");
         return this.getAuth0IdFromToken(authorizationHeader)
                 .flatMap(decodedAuth0Id -> CMSRestaurantRepository.findByUserId(decodedAuth0Id)
-                        .flatMap(existingRestaurant -> ServerResponse.ok().bodyValue(convertToDto(existingRestaurant)))
+                        .flatMap(existingRestaurant -> convertToDto(existingRestaurant)
+                                .flatMap(dto -> ServerResponse.ok().bodyValue(dto)))
                         .switchIfEmpty(Mono.defer(() -> {
                             UUID uuid = UUID.randomUUID();
                             String restaurantName = "My Restaurant" + "-" + uuid;
@@ -82,7 +85,8 @@ public class CMSRestaurantRoutesHandler {
                             String slug = this.createSlug(restaurantName);
                             newRestaurant.setSlug(slug);
                             return CMSRestaurantRepository.save(newRestaurant)
-                                    .flatMap(savedRestaurant -> ServerResponse.status(HttpStatus.CREATED).bodyValue(convertToDto(savedRestaurant)));
+                                    .flatMap(savedRestaurant -> convertToDto(savedRestaurant)
+                                            .flatMap(dto -> ServerResponse.status(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).bodyValue(dto)));
                         }))
                 );
     }
@@ -106,19 +110,20 @@ public class CMSRestaurantRoutesHandler {
                                         restaurant.setEstimatedDeliveryTime(restaurantPUTReq.getEstimatedDeliveryTime());
                                         restaurant.setCity(restaurantPUTReq.getCity());
                                         restaurant.setCountry(restaurantPUTReq.getCountry());
-                                        restaurant.setMenuItems(restaurantPUTReq.getMenuItems().stream()
-                                                .map(menuItemReq -> {
-                                                    ObjectId id = menuItemReq.getId()
-                                                            .map(ObjectId::new)
-                                                            .orElseGet(ObjectId::new);
-                                                    return new MenuItem(id, menuItemReq.getName(), menuItemReq.getPrice());
-                                                })
-                                                .collect(Collectors.toList()));
                                         restaurant.setIsActivatedByUser(restaurantPUTReq.getIsActivatedByUser());
                                         restaurant.setLastUpdated(LocalDateTime.now());
                                         String slug = this.createSlug(restaurantPUTReq.getRestaurantName());
                                         restaurant.setSlug(slug);
-                                        return CMSRestaurantRepository.save(restaurant)
+                                        CMSRestaurantRepository.save(restaurant);
+                                        return Flux.fromIterable(restaurantPUTReq.getMenuItems())
+                                                .map(menuItemReq -> new MenuItem(
+                                                        menuItemReq.getId().map(ObjectId::new).orElseGet(ObjectId::new),
+                                                        menuItemReq.getName(),
+                                                        menuItemReq.getPrice()
+                                                ))
+                                                .collectList()
+                                                .doOnNext(restaurant::setMenuItems)
+                                                .then(CMSRestaurantRepository.save(restaurant))
                                                 .flatMap(savedRestaurant -> ServerResponse.noContent().build());
                                     });
                         })
@@ -126,8 +131,8 @@ public class CMSRestaurantRoutesHandler {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Restaurant not found")));
     }
 
-    private CMSRestaurantDto convertToDto(Restaurant restaurant) {
-        return new CMSRestaurantDto(restaurant);
+    private Mono<CMSRestaurantDto> convertToDto(Restaurant restaurant) {
+        return CMSRestaurantDto.fromRestaurant(restaurant);
     }
 
     private Mono<String> getAuth0IdFromToken(String authorizationHeader) {
